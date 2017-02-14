@@ -12,6 +12,12 @@ class Hero(object):
         self.health = health
         self.power = power
 
+    def attack(self,enemy):
+        enemy.health -= self.power
+        print "You do %d damage to the goblin" % self.power
+        if enemy.health <= 0:
+            print "The goblin is dead."
+
 class Goblin(object):
     def __init__(self, health, power):
         self.health = health
