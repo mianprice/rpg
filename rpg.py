@@ -41,6 +41,12 @@ class Character(object):
         print "You received %d coins for this battle" % bounty
         self.coins += bounty
 
+    def restore(self, amount):
+        self.health += amount
+        print "Hero's heath is restored to %d!" % self.health
+        time.sleep(1)
+
+
 '''
 Playable Character Classes
 '''
@@ -50,11 +56,6 @@ class Hero(Character):
         self.health = 10
         self.power = 5
         self.coins = 20
-
-    def restore(self):
-        self.health = 10
-        print "Hero's heath is restored to %d!" % self.health
-        time.sleep(1)
 
     def attack(self, enemy):
         if not self.alive():
@@ -266,7 +267,14 @@ class Tonic(object):
     cost = 5
     name = 'tonic'
     def apply(self, character):
-        character.health += 2
+        character.restore(2)
+        print "%s's health increased to %d." % (character.name, character.health)
+
+class SuperTonic(object):
+    cost = 20
+    name = 'supertonic'
+    def apply(self, character):
+        character.restore(10)
         print "%s's health increased to %d." % (character.name, character.health)
 
 class Sword(object):
@@ -280,7 +288,7 @@ class Store(object):
     # If you define a variable in the scope of a class:
     # This is a class variable and you can access it like
     # Store.items => [Tonic, Sword]
-    items = [Tonic, Sword]
+    items = [Tonic, Sword, SuperTonic]
     def do_shopping(self, hero):
         while True:
             print "====================="
