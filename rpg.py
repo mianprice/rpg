@@ -122,9 +122,36 @@ class Zombie(Character):
         self.name = 'zombie'
         self.health = 1
         self.power = 1
+        self.isDead = False
 
     def receive_damage(self,points):
-        print "%s didn't take any damage!" % self.name
+        if type(points) == bool:
+            self.isDead = True
+            print "%s is dead." % self.name
+        else:
+            print "%s didn't take any damage!" % self.name
+
+    def alive(self):
+        return not self.isDead
+
+class Tallahassee(Character):
+    def __init__(self):
+        self.name = "Tallahassee"
+        self.health = 10
+        self.power = 5
+        self.coins = 20
+
+    def attack(self, enemy):
+        if not self.alive():
+            return
+        if enemy.name != 'zombie':
+            print "%s attacks %s" % (self.name, enemy.name)
+            enemy.receive_damage(self.power)
+            time.sleep(1.5)
+        else:
+            print "It's time for the zombie kill of the week!"
+            enemy.receive_damage(True)
+            time.sleep(1.5)
 
 class Battle(object):
     def do_battle(self, hero, enemy):
@@ -198,7 +225,7 @@ class Store(object):
                 item = ItemToBuy()
                 hero.buy(item)
 
-hero = Hero()
+hero = Tallahassee()
 enemies = [Zombie(), Wizard()]
 battle_engine = Battle()
 shopping_engine = Store()
@@ -208,6 +235,7 @@ for enemy in enemies:
     if not hero_won:
         print "YOU LOSE!"
         exit(0)
-    shopping_engine.do_shopping(hero)
+    if enemies.index(enemy) < len(enemies)-1:
+        shopping_engine.do_shopping(hero)
 
 print "YOU WIN!"
