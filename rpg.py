@@ -4,6 +4,9 @@ Added a store. The hero can now buy a tonic or a sword. A tonic will add 2 to th
 import random
 import time
 
+'''
+Base Character class
+'''
 class Character(object):
     def __init__(self):
         self.name = '<undefined>'
@@ -34,6 +37,9 @@ class Character(object):
     def print_status(self):
         print "%s has %d health and %d power." % (self.name, self.health, self.power)
 
+'''
+Playable Character Classes
+'''
 class Hero(Character):
     def __init__(self, name):
         self.name = name
@@ -58,6 +64,46 @@ class Hero(Character):
             enemy.receive_damage(self.power)
         time.sleep(1.5)
 
+class Tallahassee(Character):
+    def __init__(self):
+        self.name = "Tallahassee"
+        self.health = 10
+        self.power = 5
+        self.coins = 20
+
+    def attack(self, enemy):
+        if not self.alive():
+            return
+        if enemy.name != 'zombie':
+            print "%s attacks %s" % (self.name, enemy.name)
+            enemy.receive_damage(self.power)
+            time.sleep(1.5)
+        else:
+            print "It's time for the zombie kill of the week!"
+            enemy.receive_damage(True)
+            time.sleep(1.5)
+
+class Achilles(Character):
+    def __init__(self):
+        self.name = "Achilles"
+        self.health = 1
+        self.power = 10
+        self.coins = 20
+
+    def receive_damage(self, points):
+        doubleCheck = random.random() < 0.001
+        if doubleCheck:
+            self.health -= points
+        else:
+            points = 0
+            print "The attack missed Achilles' heel!"
+        print "%s received %d damage." % (self.name, points)
+        if self.health <= 0:
+            print "%s is dead." % self.name
+
+'''
+Enemy character Classes
+'''
 class Medic(Character):
     def __init__(self):
         self.name = 'medic'
@@ -134,43 +180,9 @@ class Zombie(Character):
     def alive(self):
         return not self.isDead
 
-class Tallahassee(Character):
-    def __init__(self):
-        self.name = "Tallahassee"
-        self.health = 10
-        self.power = 5
-        self.coins = 20
-
-    def attack(self, enemy):
-        if not self.alive():
-            return
-        if enemy.name != 'zombie':
-            print "%s attacks %s" % (self.name, enemy.name)
-            enemy.receive_damage(self.power)
-            time.sleep(1.5)
-        else:
-            print "It's time for the zombie kill of the week!"
-            enemy.receive_damage(True)
-            time.sleep(1.5)
-
-class Achilles(Character):
-    def __init__(self):
-        self.name = "Achilles"
-        self.health = 1
-        self.power = 10
-        self.coins = 20
-
-    def receive_damage(self, points):
-        doubleCheck = random.random() < 0.001
-        if doubleCheck:
-            self.health -= points
-        else:
-            points = 0
-            print "The attack missed Achilles' heel!"
-        print "%s received %d damage." % (self.name, points)
-        if self.health <= 0:
-            print "%s is dead." % self.name
-
+'''
+Battle Engine
+'''
 class Battle(object):
     def do_battle(self, hero, enemy):
         print "====================="
@@ -219,6 +231,9 @@ class Sword(object):
         hero.power += 2
         print "%s's power increased to %d." % (hero.name, hero.power)
 
+'''
+Store Engine
+'''
 class Store(object):
     # If you define a variable in the scope of a class:
     # This is a class variable and you can access it like
@@ -243,6 +258,9 @@ class Store(object):
                 item = ItemToBuy()
                 hero.buy(item)
 
+'''
+Setup and Main Loop
+'''
 heroType = raw_input("What is your hero's name?")
 if heroType == "Tallahassee":
     hero = Tallahassee()
