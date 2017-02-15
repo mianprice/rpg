@@ -117,6 +117,15 @@ class Shadow(Character):
         if self.health <= 0:
             print "%s is dead." % self.name
 
+class Zombie(Character):
+    def __init__(self):
+        self.name = 'zombie'
+        self.health = 1
+        self.power = 1
+
+    def receive_damage(self,points):
+        print "%s didn't take any damage!" % self.name
+
 class Battle(object):
     def do_battle(self, hero, enemy):
         print "====================="
@@ -190,7 +199,7 @@ class Store(object):
                 hero.buy(item)
 
 hero = Hero()
-enemies = [Goblin(), Wizard()]
+enemies = [Zombie(), Wizard()]
 battle_engine = Battle()
 shopping_engine = Store()
 
