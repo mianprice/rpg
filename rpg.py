@@ -21,7 +21,7 @@ class Character(object):
         if not self.alive():
             return
         print "%s attacks %s" % (self.name, enemy.name)
-        enemy.receive_damage(self.power)
+        enemy.receive_damage(self.power, self)
         time.sleep(1.5)
 
     def buy(self, item):
@@ -36,6 +36,10 @@ class Character(object):
 
     def print_status(self):
         print "%s has %d health and %d power." % (self.name, self.health, self.power)
+
+    def receive_bounty(self, bounty):
+        print "You received %d coins for this battle" % bounty
+        self.coins += bounty
 
 '''
 Playable Character Classes
@@ -59,9 +63,9 @@ class Hero(Character):
         doubleCheck = random.random() < 0.2
         if doubleCheck:
             print "Critical strike!"
-            enemy.receive_damage(self.power * 2)
+            enemy.receive_damage(self.power * 2, self)
         else:
-            enemy.receive_damage(self.power)
+            enemy.receive_damage(self.power, self)
         time.sleep(1.5)
 
 class Tallahassee(Character):
@@ -76,11 +80,11 @@ class Tallahassee(Character):
             return
         if enemy.name != 'zombie':
             print "%s attacks %s" % (self.name, enemy.name)
-            enemy.receive_damage(self.power)
+            enemy.receive_damage(self.power, self)
             time.sleep(1.5)
         else:
             print "It's time for the zombie kill of the week!"
-            enemy.receive_damage(True)
+            enemy.receive_damage(True, self)
             time.sleep(1.5)
 
 class Achilles(Character):
@@ -104,18 +108,53 @@ class Achilles(Character):
 '''
 Enemy character Classes
 '''
-class Medic(Character):
+class Enemy(Character):
+    def __init__(self):
+        self.name = 'enemy'
+        self.health = 5
+        self.power = 1
+        self.bounty = 5
+        self.lastAttack = self
+
+    def give_bounty(self):
+        target = self.lastAttack
+        target.receive_bounty(self.bounty)
+
+    def isAlive(self):
+        if self.health <= 0:
+            self.give_bounty()
+            return False
+        else:
+            return True
+
+    def attack(self, enemy):
+        if not self.isAlive():
+            return
+        print "%s attacks %s" % (self.name, enemy.name)
+        enemy.receive_damage(self.power, self)
+        time.sleep(1.5)
+
+    def receive_damage(self, points, enemy):
+        self.lastAttack = enemy
+        self.health -= points
+        print "%s received %d damage." % (self.name, points)
+        if self.health <= 0:
+            print "%s is dead." % self.name
+
+class Medic(Enemy):
     def __init__(self):
         self.name = 'medic'
         self.health = 10
         self.power = 5
         self.recuperate_amount = 2
+        self.bounty = 10
 
     def recuperate(self):
         self.health += self.recuperate_amount
         print "%s recuperated %d health." % (self.name, self.recuperate_amount)
 
-    def receive_damage(self, points):
+    def receive_damage(self, points, enemy):
+        self.lastAttack = enemy
         self.health -= points
         print "%s received %d damage." % (self.name, points)
         doubleCheck = random.random() < 0.2
@@ -124,20 +163,22 @@ class Medic(Character):
         if self.health <= 0:
             print "%s is dead." % self.name
 
-class Goblin(Character):
+class Goblin(Enemy):
     def __init__(self):
         self.name = 'goblin'
         self.health = 6
         self.power = 2
+        self.bounty = 5
 
-class Wizard(Character):
+class Wizard(Enemy):
     def __init__(self):
         self.name = 'wizard'
         self.health = 8
         self.power = 1
+        self.bounty = 20
 
     def attack(self, enemy):
-        if not self.alive():
+        if not self.isAlive():
             return
         swap_power = random.random() > 0.5
         if swap_power:
@@ -147,13 +188,15 @@ class Wizard(Character):
         if swap_power:
             self.power, enemy.power = enemy.power, self.power
 
-class Shadow(Character):
+class Shadow(Enemy):
     def __init__(self):
         self.name = 'shadow'
         self.health = 1
         self.power = 5
+        self.bounty = 25
 
-    def receive_damage(self, points):
+    def receive_damage(self, points, enemy):
+        self.lastAttack = enemy
         doubleCheck = random.random() < 0.1
         if doubleCheck:
             self.health -= points
@@ -163,22 +206,21 @@ class Shadow(Character):
         if self.health <= 0:
             print "%s is dead." % self.name
 
-class Zombie(Character):
+class Zombie(Enemy):
     def __init__(self):
         self.name = 'zombie'
         self.health = 1
         self.power = 1
-        self.isDead = False
+        self.bounty = 50
 
-    def receive_damage(self,points):
+    def receive_damage(self,points, enemy):
+        self.lastAttack = enemy
         if type(points) == bool:
-            self.isDead = True
+            self.health = 0
             print "%s is dead." % self.name
         else:
             print "%s didn't take any damage!" % self.name
 
-    def alive(self):
-        return not self.isDead
 
 '''
 Battle Engine
@@ -217,6 +259,9 @@ class Battle(object):
             print "YOU LOSE!"
             return False
 
+'''
+Store Engine
+'''
 class Tonic(object):
     cost = 5
     name = 'tonic'
@@ -231,9 +276,6 @@ class Sword(object):
         hero.power += 2
         print "%s's power increased to %d." % (hero.name, hero.power)
 
-'''
-Store Engine
-'''
 class Store(object):
     # If you define a variable in the scope of a class:
     # This is a class variable and you can access it like
