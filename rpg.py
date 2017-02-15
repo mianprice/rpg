@@ -21,6 +21,10 @@ class Character(object):
         enemy.receive_damage(self.power)
         time.sleep(1.5)
 
+    def buy(self, item):
+        self.coins -= item.cost
+        item.apply(self)
+
     def receive_damage(self, points):
         self.health -= points
         print "%s received %d damage." % (self.name, points)
@@ -42,21 +46,38 @@ class Hero(Character):
         print "Hero's heath is restored to %d!" % self.health
         time.sleep(1)
 
-    def buy(self, item):
-        self.coins -= item.cost
-        item.apply(hero)
-
     def attack(self, enemy):
         if not self.alive():
             return
         print "%s attacks %s" % (self.name, enemy.name)
-        doubleCheck = random.random()
-        if doubleCheck <= 0.2:
+        doubleCheck = random.random() < 0.2
+        if doubleCheck:
             print "Critical strike!"
             enemy.receive_damage(self.power * 2)
         else:
             enemy.receive_damage(self.power)
         time.sleep(1.5)
+
+class Medic(Character):
+    def __init__(self):
+        self.name = 'medic'
+        self.health = 10
+        self.power = 5
+        self.coins = 20
+        self.recuperate_amount = 2
+
+    def recuperate(self):
+        self.health += self.recuperate_amount
+        print "%s recuperated %d health." % (self.name, self.recuperate_amount)
+
+    def receive_damage(self, points):
+        self.health -= points
+        print "%s received %d damage." % (self.name, points)
+        doubleCheck = random.random() < 0.2
+        if doubleCheck:
+            self.recuperate()
+        if self.health <= 0:
+            print "%s is dead." % self.name
 
 class Goblin(Character):
     def __init__(self):
@@ -151,15 +172,17 @@ class Store(object):
                 item = ItemToBuy()
                 hero.buy(item)
 
-hero = Hero()
+hero = Medic()
 enemies = [Goblin(), Wizard()]
 battle_engine = Battle()
 shopping_engine = Store()
+loss_count = 0
 
 for enemy in enemies:
     hero_won = battle_engine.do_battle(hero, enemy)
-    if not hero_won:
+    if not hero_won and loss_count == 0:
         print "YOU LOSE!"
+        loss_count += 1
         exit(0)
     shopping_engine.do_shopping(hero)
 
