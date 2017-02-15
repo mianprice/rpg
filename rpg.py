@@ -35,8 +35,8 @@ class Character(object):
         print "%s has %d health and %d power." % (self.name, self.health, self.power)
 
 class Hero(Character):
-    def __init__(self):
-        self.name = 'hero'
+    def __init__(self, name):
+        self.name = name
         self.health = 10
         self.power = 5
         self.coins = 20
@@ -63,7 +63,6 @@ class Medic(Character):
         self.name = 'medic'
         self.health = 10
         self.power = 5
-        self.coins = 20
         self.recuperate_amount = 2
 
     def recuperate(self):
@@ -92,6 +91,8 @@ class Wizard(Character):
         self.power = 1
 
     def attack(self, enemy):
+        if not self.alive():
+            return
         swap_power = random.random() > 0.5
         if swap_power:
             print "%s swaps power with %s during attack" % (self.name, enemy.name)
@@ -105,7 +106,6 @@ class Shadow(Character):
         self.name = 'shadow'
         self.health = 1
         self.power = 5
-        self.coins = 20
 
     def receive_damage(self, points):
         doubleCheck = random.random() < 0.1
@@ -225,7 +225,11 @@ class Store(object):
                 item = ItemToBuy()
                 hero.buy(item)
 
-hero = Tallahassee()
+heroType = raw_input("What is your hero's name?")
+if heroType == "Tallahassee":
+    hero = Tallahassee()
+else:
+    hero = Hero(heroType)
 enemies = [Zombie(), Wizard()]
 battle_engine = Battle()
 shopping_engine = Store()
