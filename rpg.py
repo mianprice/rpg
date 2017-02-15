@@ -13,6 +13,8 @@ class Character(object):
         self.health = 10
         self.power = 5
         self.coins = 20
+        self.armor = 0
+
 
     def alive(self):
         return self.health > 0
@@ -28,14 +30,16 @@ class Character(object):
         self.coins -= item.cost
         item.apply(self)
 
-    def receive_damage(self, points):
+    def receive_damage(self, points, enemy):
+        self.lastAttack = enemy
+        points = self.armor_check(points)
         self.health -= points
         print "%s received %d damage." % (self.name, points)
         if self.health <= 0:
             print "%s is dead." % self.name
 
     def print_status(self):
-        print "%s has %d health and %d power." % (self.name, self.health, self.power)
+        print "%s has %d health, %d power, and %d armor." % (self.name, self.health, self.power, self.armor)
 
     def receive_bounty(self, bounty):
         print "You received %d coins for this battle" % bounty
@@ -43,8 +47,24 @@ class Character(object):
 
     def restore(self, amount):
         self.health += amount
-        print "Hero's heath is restored to %d!" % self.health
+        print "%s's heath is restored to %d!" % (self.name, self.health)
         time.sleep(1)
+
+    def add_armor(self, amount):
+        self.armor += amount
+        print "%s's armor is now %d!" % (self.name, self.armor)
+        time.sleep(1)
+
+    def add_power(self, amount):
+        self.power += amount
+        print "%s's power is now %d!" % (self.name, self.power)
+        time.sleep(1)
+
+    def armor_check(self, points):
+        if self.armor > points:
+            return 0
+        else:
+            return points - armor
 
 
 '''
@@ -56,6 +76,7 @@ class Hero(Character):
         self.health = 10
         self.power = 5
         self.coins = 20
+        self.armor = 0
 
     def attack(self, enemy):
         if not self.alive():
@@ -75,6 +96,7 @@ class Tallahassee(Character):
         self.health = 10
         self.power = 5
         self.coins = 20
+        self.armor = 0
 
     def attack(self, enemy):
         if not self.alive():
@@ -94,8 +116,11 @@ class Achilles(Character):
         self.health = 1
         self.power = 10
         self.coins = 20
+        self.armor = 0
 
-    def receive_damage(self, points):
+    def receive_damage(self, points, enemy):
+        self.lastAttack = enemy
+        points = self.armor_check(points)
         doubleCheck = random.random() < 0.001
         if doubleCheck:
             self.health -= points
@@ -115,7 +140,7 @@ class Enemy(Character):
         self.health = 5
         self.power = 1
         self.bounty = 5
-        self.lastAttack = self
+        self.armor = 0
 
     def give_bounty(self):
         target = self.lastAttack
@@ -149,6 +174,7 @@ class Medic(Enemy):
         self.power = 5
         self.recuperate_amount = 2
         self.bounty = 10
+        self.armor = 0
 
     def recuperate(self):
         self.health += self.recuperate_amount
@@ -170,6 +196,7 @@ class Goblin(Enemy):
         self.health = 6
         self.power = 2
         self.bounty = 5
+        self.armor = 0
 
 class Wizard(Enemy):
     def __init__(self):
@@ -177,6 +204,7 @@ class Wizard(Enemy):
         self.health = 8
         self.power = 1
         self.bounty = 20
+        self.armor = 0
 
     def attack(self, enemy):
         if not self.isAlive():
@@ -195,6 +223,7 @@ class Shadow(Enemy):
         self.health = 1
         self.power = 5
         self.bounty = 25
+        self.armor = 0
 
     def receive_damage(self, points, enemy):
         self.lastAttack = enemy
@@ -213,6 +242,7 @@ class Zombie(Enemy):
         self.health = 1
         self.power = 1
         self.bounty = 50
+        self.armor = 0
 
     def receive_damage(self,points, enemy):
         self.lastAttack = enemy
@@ -268,27 +298,30 @@ class Tonic(object):
     name = 'tonic'
     def apply(self, character):
         character.restore(2)
-        print "%s's health increased to %d." % (character.name, character.health)
 
 class SuperTonic(object):
     cost = 20
     name = 'supertonic'
     def apply(self, character):
         character.restore(10)
-        print "%s's health increased to %d." % (character.name, character.health)
+
+class Armor(object):
+    cost = 10
+    name = 'armor'
+    def apply(self, character):
+        character.add_armor(2)
 
 class Sword(object):
     cost = 10
     name = 'sword'
-    def apply(self, hero):
-        hero.power += 2
-        print "%s's power increased to %d." % (hero.name, hero.power)
+    def apply(self, character):
+        character.add_power(2)
 
 class Store(object):
     # If you define a variable in the scope of a class:
     # This is a class variable and you can access it like
     # Store.items => [Tonic, Sword]
-    items = [Tonic, Sword, SuperTonic]
+    items = [Tonic, Sword, SuperTonic, Armor]
     def do_shopping(self, hero):
         while True:
             print "====================="
