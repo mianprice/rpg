@@ -100,6 +100,23 @@ class Wizard(Character):
         if swap_power:
             self.power, enemy.power = enemy.power, self.power
 
+class Shadow(Character):
+    def __init__(self):
+        self.name = 'shadow'
+        self.health = 1
+        self.power = 5
+        self.coins = 20
+
+    def receive_damage(self, points):
+        doubleCheck = random.random() < 0.1
+        if doubleCheck:
+            self.health -= points
+        else:
+            points = 0
+        print "%s received %d damage." % (self.name, points)
+        if self.health <= 0:
+            print "%s is dead." % self.name
+
 class Battle(object):
     def do_battle(self, hero, enemy):
         print "====================="
@@ -172,17 +189,15 @@ class Store(object):
                 item = ItemToBuy()
                 hero.buy(item)
 
-hero = Medic()
+hero = Hero()
 enemies = [Goblin(), Wizard()]
 battle_engine = Battle()
 shopping_engine = Store()
-loss_count = 0
 
 for enemy in enemies:
     hero_won = battle_engine.do_battle(hero, enemy)
-    if not hero_won and loss_count == 0:
+    if not hero_won:
         print "YOU LOSE!"
-        loss_count += 1
         exit(0)
     shopping_engine.do_shopping(hero)
 
