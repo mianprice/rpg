@@ -153,6 +153,24 @@ class Tallahassee(Character):
             enemy.receive_damage(True)
             time.sleep(1.5)
 
+class Achilles(Character):
+    def __init__(self):
+        self.name = "Achilles"
+        self.health = 1
+        self.power = 10
+        self.coins = 20
+
+    def receive_damage(self, points):
+        doubleCheck = random.random() < 0.001
+        if doubleCheck:
+            self.health -= points
+        else:
+            points = 0
+            print "The attack missed Achilles' heel!"
+        print "%s received %d damage." % (self.name, points)
+        if self.health <= 0:
+            print "%s is dead." % self.name
+
 class Battle(object):
     def do_battle(self, hero, enemy):
         print "====================="
@@ -228,6 +246,8 @@ class Store(object):
 heroType = raw_input("What is your hero's name?")
 if heroType == "Tallahassee":
     hero = Tallahassee()
+elif heroType == "Achilles":
+    hero = Achilles()
 else:
     hero = Hero(heroType)
 enemies = [Zombie(), Wizard()]
